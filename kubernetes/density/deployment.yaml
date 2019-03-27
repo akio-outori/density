@@ -17,13 +17,13 @@ spec:
       containers:
 
       - name: app-a
-        image: density:app_a
+        image: density/app_a:latest
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5000
 
       - name: app-b
-        image: density:app_b
+        image: density/app_b:latest
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5001
