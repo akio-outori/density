@@ -1,9 +1,9 @@
 FROM jfloff/alpine-python:3.7
 
-COPY files/requirements.txt /app/requirements.txt
-COPY files/app_b.py /app/app_b.py
+COPY files/* /app/
 
-RUN pip install --upgrade pip \
+RUN apk add --no-cache sqlite \
+    && pip install --upgrade pip \
     && pip install -r /app/requirements.txt
 
-CMD python /app/app_a.py
+CMD sqlite3 db.connection < /app/schema.sql && python /app/app_b.py
