@@ -15,8 +15,8 @@ def auth():
         username = cur.fetchone()[0]
         con.close()
         return username
-    except:
-        return 'fail'
+    except sqlite3.Error as er:
+        return 'er:', er.message
 
 
 if __name__ == "__main__":
