@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: density-app
+  labels:
+    app: density-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: density-app
+  template:
+    metadata:
+      labels:
+        app: density-app
+    spec:
+      containers:
+
+      - name: app-a
+        image: density:app_a
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5000
+
+      - name: app-b
+        image: density:app_b
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5001
