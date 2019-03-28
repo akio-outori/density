@@ -14,6 +14,7 @@ spec:
       labels:
         app: density-app
     spec:
+
       containers:
 
       - name: app-a
@@ -21,9 +22,11 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5000
+            name: frontend
 
       - name: app-b
         image: density/app_b:latest
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5001
+            name: backend
