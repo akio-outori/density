@@ -24,5 +24,8 @@ teardown:
 	minikube delete
 
 deploy:
+	kubectl apply -Rf kubernetes/$(APP)
+
+redeploy: build
 	kubectl delete -Rf kubernetes/$(APP)
 	kubectl apply -Rf kubernetes/$(APP)
