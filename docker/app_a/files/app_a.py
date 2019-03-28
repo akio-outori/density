@@ -16,7 +16,7 @@ def jobs():
     if result == "density":
         return 'Jobs:\nTitle: Devops\nDescription: Awesome\n'
     else:
-        return 'fail'
+        return "fail"
 
 
 if __name__ == "__main__":

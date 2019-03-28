@@ -1,4 +1,4 @@
-FROM jfloff/alpine-python:3.7
+FROM jfloff/alpine-python:2.7
 
 COPY files/* /app/
 
@@ -6,4 +6,6 @@ RUN apk add --no-cache sqlite \
     && pip install --upgrade pip \
     && pip install -r /app/requirements.txt
 
-CMD sqlite3 db.connection < /app/schema.sql && python /app/app_b.py
+EXPOSE 5001
+
+CMD sqlite3 database.db < /app/schema.sql && python /app/app_b.py
