@@ -17,7 +17,9 @@ build:
 	cd docker/app_b/ && docker build --tag $(APP)/app_b:latest .
 
 setup:
-	minikube start --logtostderr
+	minikube start --memory 4096 --extra-config kubelet.EnableCustomMetrics=true --logtostderr
+	minikube addons enable metrics-server
+	minikube addons enable heapster
 
 teardown:
 	minikube stop
