@@ -16,6 +16,13 @@ build:
 	cd docker/app_a/ && docker build --tag $(APP)/app_a:latest .
 	cd docker/app_b/ && docker build --tag $(APP)/app_b:latest .
 
+build-aws:
+	cd docker/app_a && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest .
+	cd docker/app_b && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest .
+	eval $(aws ecr get-login --no-include-email)
+	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest
+	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest
+
 setup:
 	minikube start --memory 4096 --logtostderr
 	minikube addons enable metrics-server
