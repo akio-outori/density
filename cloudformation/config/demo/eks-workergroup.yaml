@@ -1,0 +1,7 @@
+---
+
+template_path: eks-workergroup.yaml
+parameters:
+
+  ClusterName: !stack_output_external density-demo-eks-controlplane::ClusterName
+  SecurityGroup: !stack_output_external density-demo-eks-controlplane::SecurityGroup

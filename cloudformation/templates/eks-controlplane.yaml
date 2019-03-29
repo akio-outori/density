@@ -1,0 +1,48 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create an EKS Control Plane
+
+Resources:
+
+  ControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group for the EKS control plane"
+      VpcId: "vpc-297bf553"
+      Tags:
+        - Key: "Name"
+          Value: "Control Plane"
+
+  ControlPlaneSecurityGroupIngress:
+    DependsOn: ControlPlaneSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ControlPlaneSecurityGroup
+      SourceSecurityGroupId: !Ref ControlPlaneSecurityGroup
+      IpProtocol: 'tcp'
+      FromPort: "0"
+      ToPort: "65535"
+
+  EksControlPlane:
+    DependsOn: ControlPlaneSecurityGroup
+    Type: "AWS::EKS::Cluster"
+    Properties:
+      Name: "density"
+      RoleArn: "arn:aws:iam::134451034775:role/EksController"
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref ControlPlaneSecurityGroup
+        SubnetIds:
+          - "subnet-423f4225"
+          - "subnet-626d6028"
+
+Outputs:
+
+  SecurityGroup:
+    Description: Cluster security group
+    Value: !Ref ControlPlaneSecurityGroup
+
+  ClusterName:
+    Description: Name assigned to the controlplane
+    Value: !Ref EksControlPlane

@@ -1,0 +1,76 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create Kubernetes worker nodes for EKS
+
+Parameters:
+
+  ClusterName:
+    Description: Name of the cluster
+    Type: String
+
+  SecurityGroup:
+    Description: Security group for the EKS cluster
+    Type: String
+
+Resources:
+
+  NodeGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      DesiredCapacity: 1
+      LaunchConfigurationName: !Ref NodeLaunchConfig
+      MinSize: 1
+      MaxSize: 2
+      Cooldown: '30'
+
+      VPCZoneIdentifier:
+        - "subnet-626d6028"
+        - "subnet-423f4225"
+
+      Tags:
+      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
+        Value: 'owned'
+        PropagateAtLaunch: 'true'
+
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
+        PauseTime: "PT60S"
+
+  NodeLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      AssociatePublicIpAddress: true
+      IamInstanceProfile: "EksNode"
+      ImageId: "ami-0eeeef929db40543c"
+      InstanceType: "t3.medium"
+      KeyName: "jeffhallyburton"
+      SecurityGroups:
+        - !Ref SecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 100
+            VolumeType: gp2
+            DeleteOnTermination: true
+
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            set -o xtrace
+
+            cat <<DHCLIENT >> /etc/dhcp/dhclient.conf
+
+            supersede domain-search 'ec2.internal';
+            supercede domain-name 'ec2.internal';
+
+            DHCLIENT
+
+            /etc/eks/bootstrap.sh ${ClusterName}
+            /opt/aws/bin/cfn-signal --exit-code $? \
+                     --stack  ${AWS::StackName} \
+                     --resource NodeGroup  \
+                     --region ${AWS::Region}

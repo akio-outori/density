@@ -1,0 +1,16 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create an ECR Repository
+
+Resources:
+
+  AppA:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "density/app_a"
+
+  AppB:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "density/app_b"
