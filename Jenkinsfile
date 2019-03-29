@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     stages {
@@ -6,6 +7,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
+                sh 'make build'
             }
         }
 
