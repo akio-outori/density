@@ -18,15 +18,29 @@ spec:
       containers:
 
       - name: app-a
-        image: density/app_a:latest
+        image: 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5000
             name: frontend
+        resources:
+          limits:
+            cpu: 150m
+            memory: 150Mi
+          requests:
+            cpu: 42m
+            memory: 50Mi
 
       - name: app-b
-        image: density/app_b:latest
+        image: 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5001
             name: backend
+        resources:
+          limits:
+            cpu: 150m
+            memory: 150Mi
+          requests:
+            cpu: 42m
+            memory: 50Mi
