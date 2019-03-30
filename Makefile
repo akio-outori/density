@@ -7,7 +7,7 @@ export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
 
 all: setup build deploy
 
-aws: setup-aws build-aws
+aws: setup-aws setup-helm setup-prometheus setup-metrics-server setup-custom-metrics build-aws
 
 build:
 	@echo docker ip: $(DOCKER_IP)
@@ -30,17 +30,42 @@ setup:
 	minikube addons enable heapster
 
 setup-aws:
-	cd cloudformations && y | sceptre launch demo
+	cd cloudformation && yes | sceptre launch demo
+	aws eks --region us-east-1 update-kubeconfig --name density
 	kubectl apply -Rf kubernetes/aws
-	kubectl create namespace monitoring
-	kubectl create namespace custom-metrics
-	openssl req -newkey rsa:2048 -nodes -keyout serving.key -x509 -days 365 -out serving.crt
-	kubectl create secret generic cm-adapter-serving-certs --from-file=./serving.crt --from-file=./serving.key -n custom-metrics
-	rm -f serving.key serving.crt
+
+setup-helm:
+	kubectl -n kube-system create serviceaccount tiller
+	kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+	helm init --service-account tiller
+	kubectl -n kube-system  rollout status deploy/tiller-deploy
+	helm version
+
+setup-prometheus:
+	helm install --name mon --namespace monitoring stable/prometheus-operator --set prometheus.prometheusSpec.serviceMonitorNamespaceSelector.matchNames[0]=default
+	kubectl --namespace monitoring get pods -l "release=mon"
+
+setup-metrics-server:
+	helm install stable/metrics-server --name metrics-server --namespace kube-system
+	kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
+
+setup-custom-metrics:
+	helm install \
+	  --name prometheus-adapter stable/prometheus-adapter \
+	  --set prometheus.url="http://mon-prometheus-operator-prometheus.monitoring.svc",prometheus.port="9090" \
+	  --set image.tag="v0.4.1" \
+	  --set rbac.create="true" \
+	  --namespace kube-system
+	kubectl -n kube-system rollout status deploy/prometheus-adapter
+	kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq .
 
 teardown:
 	minikube stop
 	minikube delete
+
+teardown-aws:
+	cd cloudformation && yes | sceptre delete demo/eks-workergroup.yaml
+	cd cloudformation && yes | sceptre delete demo/eks-controlplane.yaml
 
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)
