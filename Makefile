@@ -7,6 +7,8 @@ export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
 
 all: setup build deploy
 
+aws: setup-aws build-aws
+
 build:
 	@echo docker ip: $(DOCKER_IP)
 	@echo docker host: $(DOCKER_HOST)
@@ -19,7 +21,6 @@ build:
 build-aws:
 	cd docker/app_a && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest .
 	cd docker/app_b && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest .
-	eval $(aws ecr get-login --no-include-email)
 	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest
 	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest
 
@@ -27,6 +28,15 @@ setup:
 	minikube start --memory 4096 --logtostderr
 	minikube addons enable metrics-server
 	minikube addons enable heapster
+
+setup-aws:
+	cd cloudformations && y | sceptre launch demo
+	kubectl apply -Rf kubernetes/aws
+	kubectl create namespace monitoring
+	kubectl create namespace custom-metrics
+	openssl req -newkey rsa:2048 -nodes -keyout serving.key -x509 -days 365 -out serving.crt
+	kubectl create secret generic cm-adapter-serving-certs --from-file=./serving.crt --from-file=./serving.key -n custom-metrics
+	rm -f serving.key serving.crt
 
 teardown:
 	minikube stop
