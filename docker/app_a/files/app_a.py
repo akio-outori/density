@@ -1,7 +1,10 @@
 from flask import Flask, request
 import requests
-application = Flask(__name__)
+from prometheus_flask_exporter import PrometheusMetrics
 
+application = Flask(__name__)
+metrics = PrometheusMetrics(application)
+metrics.info('app_info', 'Application info', version='1.0.3')
 
 @application.route('/hello')
 def hello():
