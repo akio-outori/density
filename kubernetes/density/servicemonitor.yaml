@@ -1,12 +1,12 @@
 kind: ServiceMonitor
 apiVersion: monitoring.coreos.com/v1
 metadata:
-  name: density
+  name: density-app
   labels:
-    app: density
+    app: density-app
 spec:
   selector:
     matchLabels:
-      app: density
+      app: density-app
   endpoints: 
-  - port: "30000"
+  - port: density-app

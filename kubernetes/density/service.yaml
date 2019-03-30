@@ -7,6 +7,7 @@ spec:
   selector:
     app: density-app
   ports:
-  - protocol: TCP
+  - name: density-app
+    protocol: TCP
     port: 5000
     nodePort: 30000
