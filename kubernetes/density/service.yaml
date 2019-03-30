@@ -2,6 +2,12 @@ kind: Service
 apiVersion: v1
 metadata:
   name: density-app
+  labels:
+    app: density-app
+    release: mon
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: 5000
 spec:
   type: NodePort
   selector:

@@ -4,9 +4,13 @@ metadata:
   name: density-app
   labels:
     app: density-app
+    release: mon
 spec:
+  jobLabel: metrics
   selector:
     matchLabels:
       app: density-app
   endpoints: 
   - port: density-app
+    interval: 10s
+    path: /metrics

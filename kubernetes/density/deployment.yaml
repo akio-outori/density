@@ -5,7 +5,6 @@ metadata:
   labels:
     app: density-app
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: density-app
