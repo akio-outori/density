@@ -1,0 +1,17 @@
+---
+
+prometheus:
+  url: "http://mon-prometheus-operator-prometheus.monitoring.svc"
+  port: "9090"
+
+rules:
+  default: true
+  custom:
+    - seriesQuery: '{namespace!="",__name__="flask_http_request_total"}'
+      seriesFilters: []
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ^flask_(.*)$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)

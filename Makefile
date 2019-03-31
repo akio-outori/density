@@ -1,9 +1,9 @@
 APP="density"
-DOCKER_IP = $(shell minikube ip)
-export DOCKER_HOST=tcp://$(DOCKER_IP):2376
-export DOCKER_API_VERSION := 1.35
-export DOCKER_TLS_VERIFY  := 1
-export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
+#DOCKER_IP = $(shell minikube ip)
+#export DOCKER_HOST=tcp://$(DOCKER_IP):2376
+#export DOCKER_API_VERSION := 1.35
+#export DOCKER_TLS_VERIFY  := 1
+#export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
 
 all: setup build deploy
 
@@ -50,12 +50,7 @@ setup-metrics-server:
 	kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
 
 setup-custom-metrics:
-	helm install \
-	  --name prometheus-adapter stable/prometheus-adapter \
-	  --set prometheus.url="http://mon-prometheus-operator-prometheus.monitoring.svc",prometheus.port="9090" \
-	  --set image.tag="v0.4.1" \
-	  --set rbac.create="true" \
-	  --namespace kube-system
+	helm install -f kubernetes/prometheus-custom-metrics.yaml stable/prometheus-adapter --name prometheus-adapter --namespace kube-system
 	kubectl -n kube-system rollout status deploy/prometheus-adapter
 	kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq .
 
@@ -66,6 +61,18 @@ teardown:
 teardown-aws:
 	cd cloudformation && yes | sceptre delete demo/eks-workergroup.yaml
 	cd cloudformation && yes | sceptre delete demo/eks-controlplane.yaml
+
+teardown-helm:
+	helm delete tiller --purge
+
+teardown-prometheus:
+	helm delete mon --purge
+
+teardown-metrics-server:
+	helm delete metrics-server --purge
+
+teardown-custom-metrics:
+	helm delete prometheus-adapter --purge
 
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)
