@@ -54,6 +54,10 @@ setup-custom-metrics:
 	kubectl -n kube-system rollout status deploy/prometheus-adapter
 	kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq .
 
+setup-cluster-autoscaler:
+	helm install -f kubernetes/cluster-autoscaler.yaml stable/cluster-autoscaler --name cluster-autoscaler --namespace kube-system
+	kubectl -n kube-system rollout status deploy/cluster-autoscaler
+
 teardown:
 	minikube stop
 	minikube delete

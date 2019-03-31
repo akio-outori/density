@@ -15,9 +15,10 @@ Parameters:
 
 Resources:
 
-  NodeGroup:
+  NodeGroup01:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
+      AutoScalingGroupName: !Sub "${ClusterName}01"
       DesiredCapacity: 1
       LaunchConfigurationName: !Ref NodeLaunchConfig
       MinSize: 1
@@ -26,9 +27,10 @@ Resources:
 
       VPCZoneIdentifier:
         - "subnet-626d6028"
-        - "subnet-423f4225"
 
       Tags:
+      - Key: Name
+        Value: !Sub "${ClusterName}01"
       - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
         Value: 'owned'
         PropagateAtLaunch: 'true'
@@ -38,6 +40,33 @@ Resources:
         MinInstancesInService: 1
         MaxBatchSize: 1
         PauseTime: "PT60S"
+
+  NodeGroup02:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub "${ClusterName}02"
+      DesiredCapacity: 1
+      LaunchConfigurationName: !Ref NodeLaunchConfig
+      MinSize: 1
+      MaxSize: 2
+      Cooldown: '30'
+
+      VPCZoneIdentifier:
+        - "subnet-423f4225"
+
+      Tags:
+      - Key: Name
+        Value: !Sub "${ClusterName}02"
+      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
+        Value: 'owned'
+        PropagateAtLaunch: 'true'
+
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
+        PauseTime: "PT60S"
+
 
   NodeLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
