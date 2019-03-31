@@ -18,7 +18,7 @@ spec:
 
       - name: app-a
         image: 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
           - containerPort: 5000
             name: frontend
@@ -32,7 +32,7 @@ spec:
 
       - name: app-b
         image: 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
           - containerPort: 5001
             name: backend
