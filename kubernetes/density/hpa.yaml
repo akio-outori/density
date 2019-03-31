@@ -19,5 +19,5 @@ spec:
         target:
           kind: Service
           name: density-app
-        metricName: flask_http_request
-        targetValue: 10
+        metricName: http_request_total
+        targetValue: 10m
