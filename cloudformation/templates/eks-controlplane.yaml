@@ -3,6 +3,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Create an EKS Control Plane
 
+Parameters:
+
+  ClusterName:
+    Description: Name to Assign to the Cluster
+    Type: String
+
+  IAMRole:
+    Description: IAM Role for the EKS ControlPlane
+    Type: String
+
 Resources:
 
   ControlPlaneSecurityGroup:
@@ -28,8 +38,8 @@ Resources:
     DependsOn: ControlPlaneSecurityGroup
     Type: "AWS::EKS::Cluster"
     Properties:
-      Name: "density"
-      RoleArn: "arn:aws:iam::134451034775:role/EksController"
+      Name: !Ref ClusterName
+      RoleArn: !Ref IAMRole
       ResourcesVpcConfig:
         SecurityGroupIds:
           - !Ref ControlPlaneSecurityGroup

@@ -1,0 +1,77 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM Roles for EKS
+
+Resources:
+
+  ControlPlane:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "EKSControlPlane"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - eks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  WorkerNodes:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "EKSWorkerNodes"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+      Policies:
+
+        - PolicyName: "ClusterAutoScaler"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+
+              - Effect: "Allow"
+                Action:
+                  - "autoscaling:DescribeAutoScalingGroups"
+                  - "autoscaling:DescribeAutoScalingInstances"
+                  - "autoscaling:SetDesiredCapacity"
+                  - "autoscaling:TerminateInstanceInAutoScalingGroup"
+                  - "autoscaling:DescribeTags"
+                Resource: "*"
+
+  WorkerNodeInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: "EKSWorkerNodes"
+      Path: "/"
+      Roles:
+        - !Ref WorkerNodes
+
+Outputs:
+
+  ControlPlane:
+    Description: IAM Role for the EKS ControlPlane
+    Value: !GetAtt ControlPlane.Arn
+
+  WorkerNodeInstanceProfile:
+    Description: IAM Instance Profile for the EKS Worker Nodes
+    Value: !Ref WorkerNodeInstanceProfile

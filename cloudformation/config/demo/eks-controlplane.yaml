@@ -1,3 +1,7 @@
 ---
 
 template_path: eks-controlplane.yaml
+parameters:
+
+  ClusterName: "density"
+  IAMRole: !stack_output_external density-demo-eks-iam::ControlPlane

@@ -1,15 +1,14 @@
 APP="density"
-#DOCKER_IP = $(shell minikube ip)
-#export DOCKER_HOST=tcp://$(DOCKER_IP):2376
-#export DOCKER_API_VERSION := 1.35
-#export DOCKER_TLS_VERIFY  := 1
-#export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
 
-all: setup build deploy
-
-aws: setup-aws setup-helm setup-prometheus setup-metrics-server setup-custom-metrics build-aws
+minikube: setup build deploy
+aws: setup-aws setup-helm setup-prometheus setup-metrics-server setup-custom-metrics setup-cluster-autoscaler build-aws deploy
 
 build:
+	DOCKER_IP = $(shell minikube ip)
+	export DOCKER_HOST=tcp://$(DOCKER_IP):2376
+	export DOCKER_API_VERSION := 1.35
+	export DOCKER_TLS_VERIFY  := 1
+	export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
 	@echo docker ip: $(DOCKER_IP)
 	@echo docker host: $(DOCKER_HOST)
 	@echo docker api version: $(DOCKER_API_VERSION)
@@ -30,6 +29,7 @@ setup:
 	minikube addons enable heapster
 
 setup-aws:
+	cd cloudformation && yes | sceptre launch demo/eks-iam.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-controlplane.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-workergroup.yaml
 	aws eks --region us-east-1 update-kubeconfig --name density
@@ -68,6 +68,7 @@ teardown:
 teardown-aws:
 	cd cloudformation && yes | sceptre delete demo/eks-workergroup.yaml
 	cd cloudformation && yes | sceptre delete demo/eks-controlplane.yaml
+	cd cloudformation && yes | sceptre delete demo/eks-iam.yaml
 
 teardown-helm:
 	helm delete tiller --purge
@@ -87,6 +88,6 @@ teardown-cluster-autoscaler:
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)
 
-redeploy: build
+redeploy:
 	kubectl delete -Rf kubernetes/$(APP)
 	kubectl apply -Rf kubernetes/$(APP)
