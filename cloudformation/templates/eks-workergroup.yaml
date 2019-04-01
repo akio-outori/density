@@ -17,6 +17,14 @@ Parameters:
     Description: Security group for the EKS cluster
     Type: String
 
+  HttpIngress:
+    Description: Target Group for HTTP Ingress
+    Type: String
+
+  HttpsIngress:
+    Description: Target Group for HTTPS Ingress
+    Type: String
+
 Resources:
 
   NodeGroup01:
@@ -31,6 +39,10 @@ Resources:
 
       VPCZoneIdentifier:
         - "subnet-626d6028"
+
+      TargetGroupARNs:
+        - !Ref HttpIngress
+        - !Ref HttpsIngress
 
       Tags:
       - Key: Name
@@ -58,6 +70,10 @@ Resources:
 
       VPCZoneIdentifier:
         - "subnet-423f4225"
+
+      TargetGroupARNs:
+        - !Ref HttpIngress
+        - !Ref HttpsIngress
 
       Tags:
       - Key: Name

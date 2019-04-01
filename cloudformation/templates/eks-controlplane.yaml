@@ -34,6 +34,33 @@ Resources:
       FromPort: "0"
       ToPort: "65535"
 
+  HttpSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ControlPlaneSecurityGroup
+      CidrIp: "172.31.0.0/16"
+      IpProtocol: 'tcp'
+      FromPort: "80"
+      ToPort: "80"
+
+  HttpsSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ControlPlaneSecurityGroup
+      CidrIp: "172.31.0.0/16"
+      IpProtocol: 'tcp'
+      FromPort: "443"
+      ToPort: "443"
+
+  HealthzSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ControlPlaneSecurityGroup
+      CidrIp: "172.31.0.0/16"
+      IpProtocol: 'tcp'
+      FromPort: "10253"
+      ToPort: "10253"
+
   EksControlPlane:
     DependsOn: ControlPlaneSecurityGroup
     Type: "AWS::EKS::Cluster"

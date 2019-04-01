@@ -6,3 +6,5 @@ parameters:
   ClusterName: !stack_output_external density-demo-eks-controlplane::ClusterName
   InstanceProfile: !stack_output_external density-demo-eks-iam::WorkerNodeInstanceProfile
   SecurityGroup: !stack_output_external density-demo-eks-controlplane::SecurityGroup
+  HttpIngress: !stack_output_external density-demo-eks-network-loadbalancer::HttpIngress
+  HttpsIngress: !stack_output_external density-demo-eks-network-loadbalancer::HttpsIngress

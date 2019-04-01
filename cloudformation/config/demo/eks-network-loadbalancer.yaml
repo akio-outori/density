@@ -1,0 +1,6 @@
+---
+
+template_path: eks-network-loadbalancer.yaml
+parameters:
+
+  ClusterName: !stack_output_external density-demo-eks-controlplane::ClusterName

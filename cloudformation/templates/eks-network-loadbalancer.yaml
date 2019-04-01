@@ -1,0 +1,96 @@
+---
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create a Network Load Balancer for EKS
+
+Parameters:
+
+  ClusterName:
+    Description: Name of the cluster (typically name of the control plane)
+    Type: String
+
+Resources:
+
+  HttpIngress:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${ClusterName}-http-ingress"
+      Port: "80"
+      Protocol: "TCP"
+      HealthCheckPort: "10253"
+      HealthCheckProtocol: "TCP"
+      VpcId: "vpc-297bf553"
+
+  HttpsIngress:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${ClusterName}-https-ingress"
+      Port: "443"
+      Protocol: "TCP"
+      HealthCheckPort: "10253"
+      HealthCheckProtocol: "TCP"
+      VpcId: "vpc-297bf553"
+
+  ElasticIp01:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: "vpc"
+
+  ElasticIp02:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: "vpc"
+
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: "network"
+      IpAddressType: "ipv4"
+      Scheme: "internet-facing"
+      SubnetMappings:
+        - SubnetId: "subnet-626d6028"
+          AllocationId: !GetAtt ElasticIp01.AllocationId
+        - SubnetId: "subnet-423f4225"
+          AllocationId: !GetAtt ElasticIp02.AllocationId
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: "80"
+      Protocol: "TCP"
+      DefaultActions:
+        - TargetGroupArn: !Ref HttpIngress
+          Type: "forward"
+
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: "443"
+      Protocol: "TCP"
+      DefaultActions:
+        - TargetGroupArn: !Ref HttpsIngress
+          Type: "forward"
+
+Outputs:
+
+  HttpIngress:
+    Description: HTTP Ingress for the Network Load Balancer
+    Value: !Ref HttpIngress
+
+  HttpsIngress:
+    Description: HTTPS Ingress for the Network Load Balancer
+    Value: !Ref HttpsIngress
+
+  NetworkLoadBalancer:
+    Description: Network Load Balancer
+    Value: !Ref NetworkLoadBalancer
+
+  NetworkLoadBalancerDNSName:
+    Description: DNS Name of the created Network Load Balancer
+    Value: !GetAtt NetworkLoadBalancer.DNSName
+
+  NetworkLoadBalancerHostedZoneId:
+    Description: Cannonical Hosted Zone of the created Network Load Balancer
+    Value: !GetAtt NetworkLoadBalancer.CanonicalHostedZoneID
