@@ -1,0 +1,11 @@
+---
+
+cloudProvider: "aws"
+awsRegion: "us-east-1"
+sslCertHostPath: "/etc/kubernetes/pki/ca.crt"
+
+autoDiscovery:
+  clusterName: "density"
+
+rbac:
+  create: true

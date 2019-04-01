@@ -1,9 +1,0 @@
----
-
-autoscalingGroups:
-  - name: your-asg-name
-    maxSize: 2
-    minSize: 1
-  - name: your-asg-name2
-    maxSize: 2
-    minSize: 1
