@@ -30,7 +30,8 @@ setup:
 	minikube addons enable heapster
 
 setup-aws:
-	cd cloudformation && yes | sceptre launch demo
+	cd cloudformation && yes | sceptre launch demo/eks-controlplane.yaml
+	cd cloudformation && yes | sceptre launch demo/eks-workergroup.yaml
 	aws eks --region us-east-1 update-kubeconfig --name density
 	kubectl apply -Rf kubernetes/aws
 
@@ -42,16 +43,18 @@ setup-helm:
 	helm version
 
 setup-prometheus:
-	helm install --name mon --namespace monitoring stable/prometheus-operator --set prometheus.prometheusSpec.serviceMonitorNamespaceSelector.matchNames[0]=default
+	helm install stable/prometheus-operator --name mon --namespace monitoring --set prometheus.prometheusSpec.serviceMonitorNamespaceSelector.matchNames[0]=default
+	kubectl -n monitoring rollout status deploy/mon-prometheus-operator-operator && sleep 60
 	kubectl --namespace monitoring get pods -l "release=mon"
 
 setup-metrics-server:
 	helm install stable/metrics-server --name metrics-server --namespace kube-system
+	kubectl -n kube-system rollout status deploy/metrics-server && sleep 60
 	kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
 
 setup-custom-metrics:
 	helm install -f kubernetes/prometheus-custom-metrics.yaml stable/prometheus-adapter --name prometheus-adapter --namespace kube-system
-	kubectl -n kube-system rollout status deploy/prometheus-adapter
+	kubectl -n kube-system rollout status deploy/prometheus-adapter && sleep 60
 	kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq .
 
 setup-cluster-autoscaler:
@@ -77,6 +80,9 @@ teardown-metrics-server:
 
 teardown-custom-metrics:
 	helm delete prometheus-adapter --purge
+
+teardown-cluster-autoscaler:
+	helm delete cluster-autoscaler --purge
 
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)
