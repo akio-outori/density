@@ -1,7 +1,7 @@
 APP="density"
 
 minikube: setup build deploy
-aws: setup-aws setup-helm setup-prometheus setup-metrics-server setup-custom-metrics setup-cluster-autoscaler build-aws deploy
+aws: setup-aws setup-helm setup-metrics-server setup-cluster-autoscaler setup-prometheus setup-custom-metrics build-aws deploy
 
 build:
 	DOCKER_IP = $(shell minikube ip)
@@ -61,6 +61,11 @@ setup-cluster-autoscaler:
 	helm install -f kubernetes/cluster-autoscaler/values-custom.yaml kubernetes/cluster-autoscaler --name cluster-autoscaler --namespace kube-system
 	kubectl -n kube-system rollout status deploy/cluster-autoscaler
 
+setup-haproxy:
+	helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+	helm install -f kubernetes/haproxy-ingress.yaml incubator/haproxy-ingress --name haproxy-ingress --namespace haproxy-ingress
+	kubectl -n kube-system rollout status deploy/haproxy-ingress
+
 teardown:
 	minikube stop
 	minikube delete
@@ -84,6 +89,9 @@ teardown-custom-metrics:
 
 teardown-cluster-autoscaler:
 	helm delete cluster-autoscaler --purge
+
+teardown-haproxy:
+	helm delete haproxy-ingress --purge
 
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)

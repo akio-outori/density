@@ -1,0 +1,12 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy
+  namespace: haproxy-ingress
+data:
+  ssl-options: force-tlsv12 no-tls-tickets
+  http-port: "80"
+  https-port: "443"
+  healthz-port: "10253"

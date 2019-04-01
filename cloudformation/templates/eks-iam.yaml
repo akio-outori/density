@@ -23,6 +23,18 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
+      Policies:
+
+        - PolicyName: "Ec2Permissions"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeAccountAttributes"
+                Resource: "*"
+
   WorkerNodes:
     Type: AWS::IAM::Role
     Properties:

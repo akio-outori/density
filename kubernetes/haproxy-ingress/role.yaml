@@ -1,0 +1,45 @@
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: haproxy
+  namespace: haproxy-ingress
+rules:
+
+  - apiGroups: [""]
+    resources: ["configmaps", "pods", "secrets", "namespaces"]
+    verbs: ["get"]
+
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "update"]
+
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
+
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "create", "update"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: haproxy
+  namespace: haproxy-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: haproxy
+subjects:
+
+  - kind: ServiceAccount
+    name: haproxy
+    namespace: haproxy-ingress
+
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: haproxy

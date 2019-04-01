@@ -1,0 +1,63 @@
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    run: haproxy
+  name: haproxy
+  namespace: haproxy-ingress
+
+spec:
+  updateStrategy:
+    type: RollingUpdate
+
+  selector:
+    matchLabels:
+      run: haproxy
+
+  template:
+    metadata:
+      labels:
+        run: haproxy
+
+    spec:
+
+      hostNetwork: true
+      serviceAccountName: haproxy
+      containers:
+
+      - name: haproxy-ingress
+        image: quay.io/jcmoraisjr/haproxy-ingress:v0.7-beta.8
+        args:
+        - --default-backend-service=$(POD_NAMESPACE)/haproxy-ingress-controller
+        - --configmap=$(POD_NAMESPACE)/haproxy
+        - --sort-backends
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        - name: stat
+          containerPort: 1936
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10253
+
+      - name: access-log
+        image: appropriate/nc
+        args: [-ul, '514']
+        ports:
+          - name: udp
+            containerPort: 514
+            protocol: UDP

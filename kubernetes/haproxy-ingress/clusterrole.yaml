@@ -1,0 +1,51 @@
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: haproxy
+rules:
+
+  - apiGroups: [""]
+    resources: ["configmaps", "endpoints", "nodes", "pods", "secrets"]
+    verbs: ["list", "watch"]
+
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch" ]
+
+  - apiGroups: ["extensions"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  - apiGroups: ["extensions"]
+    resources: ["ingresses/status"]
+    verbs: ["update"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: haproxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: haproxy
+subjects:
+
+  - kind: ServiceAccount
+    name: haproxy
+    namespace: haproxy-ingress
+
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: haproxy

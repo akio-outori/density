@@ -1,0 +1,28 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: haproxy-ingress-controller
+  name: haproxy-ingress-controller
+  namespace: haproxy-ingress
+
+spec:
+  selector:
+    matchLabels:
+      run: haproxy-ingress-controller
+  template:
+    metadata:
+      labels:
+        run: haproxy-ingress-controller
+    spec:
+      containers:
+      - name: haproxy-ingress-controller
+        image: gcr.io/google_containers/defaultbackend:1.0
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 10m
+            memory: 20Mi
