@@ -9,6 +9,10 @@ Parameters:
     Description: Name of the cluster (typically name of the control plane)
     Type: String
 
+  DnsName:
+    Description: DNS Name to assign to the load balancer
+    Type: String
+
 Resources:
 
   HttpIngress:
@@ -73,6 +77,17 @@ Resources:
         - TargetGroupArn: !Ref HttpsIngress
           Type: "forward"
 
+  Route53Alias:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref DnsName
+      Type: "A"
+      HostedZoneId: "Z38KSW99OK3163"
+      AliasTarget:
+        DNSName: !GetAtt NetworkLoadBalancer.DNSName
+        HostedZoneId: !GetAtt NetworkLoadBalancer.CanonicalHostedZoneID
+
+
 Outputs:
 
   HttpIngress:
@@ -86,11 +101,3 @@ Outputs:
   NetworkLoadBalancer:
     Description: Network Load Balancer
     Value: !Ref NetworkLoadBalancer
-
-  NetworkLoadBalancerDNSName:
-    Description: DNS Name of the created Network Load Balancer
-    Value: !GetAtt NetworkLoadBalancer.DNSName
-
-  NetworkLoadBalancerHostedZoneId:
-    Description: Cannonical Hosted Zone of the created Network Load Balancer
-    Value: !GetAtt NetworkLoadBalancer.CanonicalHostedZoneID

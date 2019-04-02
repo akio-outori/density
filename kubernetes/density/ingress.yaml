@@ -1,0 +1,25 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: density-ingress
+  annotations:
+    kubernetes.io/ingress.class: "haproxy"
+    ingress.kubernetes.io/rewrite-target: "/"
+
+spec:
+  tls:
+  - hosts:
+    - density.jhallyburton.net
+
+  rules:
+
+    - host: density.jhallyburton.net
+      http:
+        paths:
+
+          - path: /
+            backend:
+              serviceName: density-app
+              servicePort: 5000
