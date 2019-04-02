@@ -15,7 +15,7 @@ Deploy a simple stateless application to a kubernetes cluster designed to scale 
 
 In order to accomplish these goals I created two environments in code:
 
-* **Local Dev** - minikube single node based on virtualbox.
+* **Local Dev** - Minikube single node based on virtualbox.
 * **Dev/Test** - AWS EKS cluster implementing autoscaling across multiple Availability Zones fronted by an Elastic Load Balancer.
 
 The production environment could be very similar (if not identical) to the Dev/Test environment, and in general I try to keep 
@@ -23,9 +23,9 @@ Pre-prod and prod as close as possible.
 
 Scaling based on requests is implemented using three kubernetes components:
 
-* **Horizontal Pod Autoscaler** - built in functionality to scale pods up and down based on various metrics (cpu/mem supported by default).
-* **Prometheus / Prometheus Adapter** - add on component used to expose custom application metrics via the kubernetes API.
-* **Horizontal Node Autoscaler** - add on component to allow kubernetes to adjust the number of nodes in an autoscaling group based on capacity.
+* **Horizontal Pod Autoscaler** - Built in functionality to scale pods up and down based on various metrics (cpu/mem supported by default).
+* **Prometheus / Prometheus Adapter** - Add-on component used to expose custom application metrics via the kubernetes API.
+* **Horizontal Node Autoscaler** - Add-on component to allow kubernetes to adjust the number of nodes in an autoscaling group based on capacity.
 
 ## Continuous Delivery
 
