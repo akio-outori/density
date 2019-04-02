@@ -5,10 +5,6 @@ Description: Create a Network Load Balancer for EKS
 
 Parameters:
 
-  ClusterName:
-    Description: Name of the cluster (typically name of the control plane)
-    Type: String
-
   DnsName:
     Description: DNS Name to assign to the load balancer
     Type: String
@@ -18,22 +14,22 @@ Resources:
   HttpIngress:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${ClusterName}-http-ingress"
+      Name: {{ sceptre_user_data.cluster_name }}-http-ingress
       Port: "80"
       Protocol: "TCP"
       HealthCheckPort: "10253"
       HealthCheckProtocol: "TCP"
-      VpcId: "vpc-297bf553"
+      VpcId: {{ sceptre_user_data.vpc }}
 
   HttpsIngress:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Sub "${ClusterName}-https-ingress"
+      Name: {{ sceptre_user_data.cluster_name }}-https-ingress
       Port: "443"
       Protocol: "TCP"
       HealthCheckPort: "10253"
       HealthCheckProtocol: "TCP"
-      VpcId: "vpc-297bf553"
+      VpcId: {{ sceptre_user_data.vpc }}
 
   ElasticIp01:
     Type: AWS::EC2::EIP
@@ -52,9 +48,9 @@ Resources:
       IpAddressType: "ipv4"
       Scheme: "internet-facing"
       SubnetMappings:
-        - SubnetId: "subnet-626d6028"
+        - SubnetId: {{ sceptre_user_data.subnets[0] }}
           AllocationId: !GetAtt ElasticIp01.AllocationId
-        - SubnetId: "subnet-423f4225"
+        - SubnetId: {{ sceptre_user_data.subnets[1] }}
           AllocationId: !GetAtt ElasticIp02.AllocationId
 
   HttpListener:
@@ -82,7 +78,7 @@ Resources:
     Properties:
       Name: !Ref DnsName
       Type: "A"
-      HostedZoneId: "Z38KSW99OK3163"
+      HostedZoneId: {{ sceptre_user_data.hosted_zone }}
       AliasTarget:
         DNSName: !GetAtt NetworkLoadBalancer.DNSName
         HostedZoneId: !GetAtt NetworkLoadBalancer.CanonicalHostedZoneID

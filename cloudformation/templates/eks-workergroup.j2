@@ -5,10 +5,6 @@ Description: Create Kubernetes worker nodes for EKS
 
 Parameters:
 
-  ClusterName:
-    Description: Name of the cluster
-    Type: String
-
   InstanceProfile:
     Description: IAM Instance Profile to assign to the Worker Nodes
     Type: String
@@ -27,10 +23,11 @@ Parameters:
 
 Resources:
 
-  NodeGroup01:
+  {% for subnet in sceptre_user_data.subnets %}
+  NodeGroup0{{ loop.index }}:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: !Sub "${ClusterName}01"
+      AutoScalingGroupName: {{ sceptre_user_data.cluster_name }}0{{ loop.index }}
       LaunchConfigurationName: !Ref NodeLaunchConfig
       DesiredCapacity: 1
       MinSize: 1
@@ -38,7 +35,7 @@ Resources:
       Cooldown: '30'
 
       VPCZoneIdentifier:
-        - "subnet-626d6028"
+        - {{ subnet }}
 
       TargetGroupARNs:
         - !Ref HttpIngress
@@ -46,9 +43,9 @@ Resources:
 
       Tags:
       - Key: Name
-        Value: !Sub "${ClusterName}01"
+        Value: {{ sceptre_user_data.cluster_name }}0{{ loop.index }}
         PropagateAtLaunch: 'true'
-      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
+      - Key: kubernetes.io/cluster/{{ sceptre_user_data.cluster_name }}
         Value: 'owned'
         PropagateAtLaunch: 'true'
 
@@ -57,37 +54,7 @@ Resources:
         MinInstancesInService: 1
         MaxBatchSize: 1
         PauseTime: "PT60S"
-
-  NodeGroup02:
-    Type: AWS::AutoScaling::AutoScalingGroup
-    Properties:
-      AutoScalingGroupName: !Sub "${ClusterName}02"
-      LaunchConfigurationName: !Ref NodeLaunchConfig
-      DesiredCapacity: 1
-      MinSize: 1
-      MaxSize: 2
-      Cooldown: '30'
-
-      VPCZoneIdentifier:
-        - "subnet-423f4225"
-
-      TargetGroupARNs:
-        - !Ref HttpIngress
-        - !Ref HttpsIngress
-
-      Tags:
-      - Key: Name
-        Value: !Sub "${ClusterName}02"
-        PropagateAtLaunch: 'true'
-      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
-        Value: 'owned'
-        PropagateAtLaunch: 'true'
-
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MinInstancesInService: 1
-        MaxBatchSize: 1
-        PauseTime: "PT60S"
+  {% endfor %}
 
   NodeLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -119,7 +86,7 @@ Resources:
 
             DHCLIENT
 
-            /etc/eks/bootstrap.sh ${ClusterName}
+            /etc/eks/bootstrap.sh {{ sceptre_user_data.cluster_name }}
             /opt/aws/bin/cfn-signal --exit-code $? \
                      --stack  ${AWS::StackName} \
                      --resource NodeGroup  \

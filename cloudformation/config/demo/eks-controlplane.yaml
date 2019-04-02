@@ -1,7 +1,15 @@
 ---
 
-template_path: eks-controlplane.yaml
+template_path: eks-controlplane.j2
 parameters:
 
-  ClusterName: "density"
   IAMRole: !stack_output_external density-demo-eks-iam::ControlPlane
+
+sceptre_user_data:
+
+  cluster_name: {{ stack_group_config.project_code }}
+  vpc: {{ stack_group_config.vpc }}
+  vpc_cidr: {{ stack_group_config.vpc_cidr }}
+  subnets:
+    - {{ stack_group_config.subnet01 }}
+    - {{ stack_group_config.subnet02 }}

@@ -1,7 +1,15 @@
 ---
 
-template_path: eks-network-loadbalancer.yaml
+template_path: eks-network-loadbalancer.j2
 parameters:
 
-  ClusterName: !stack_output_external density-demo-eks-controlplane::ClusterName
   DnsName: "density.jhallyburton.net"
+
+sceptre_user_data:
+
+  cluster_name: {{ stack_group_config.project_code }}
+  vpc: {{ stack_group_config.vpc }}
+  hosted_zone: {{ stack_group_config.hosted_zone }}
+  subnets:
+    - {{ stack_group_config.subnet01 }}
+    - {{ stack_group_config.subnet02 }}

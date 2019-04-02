@@ -1,10 +1,16 @@
 ---
 
-template_path: eks-workergroup.yaml
+template_path: eks-workergroup.j2
 parameters:
 
-  ClusterName: !stack_output_external density-demo-eks-controlplane::ClusterName
   InstanceProfile: !stack_output_external density-demo-eks-iam::WorkerNodeInstanceProfile
   SecurityGroup: !stack_output_external density-demo-eks-controlplane::SecurityGroup
   HttpIngress: !stack_output_external density-demo-eks-network-loadbalancer::HttpIngress
   HttpsIngress: !stack_output_external density-demo-eks-network-loadbalancer::HttpsIngress
+
+sceptre_user_data:
+
+  cluster_name: {{ stack_group_config.project_code }}
+  subnets:
+    - {{ stack_group_config.subnet01 }}
+    - {{ stack_group_config.subnet02 }}

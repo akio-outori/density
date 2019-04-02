@@ -1,2 +1,7 @@
 project_code: density
 region: us-east-1
+vpc: vpc-297bf553
+vpc_cidr: 172.31.0.0/16
+subnet01: subnet-423f4225
+subnet02: subnet-626d6028
+hosted_zone: Z38KSW99OK3163
