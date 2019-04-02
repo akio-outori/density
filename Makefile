@@ -31,6 +31,7 @@ setup:
 setup-aws:
 	cd cloudformation && yes | sceptre launch demo/eks-iam.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-controlplane.yaml
+	cd cloudformation && yes | sceptre delete demo/eks-network-loadbalancer.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-workergroup.yaml
 	aws eks --region us-east-1 update-kubeconfig --name density
 	kubectl apply -Rf kubernetes/aws
@@ -72,6 +73,7 @@ teardown:
 
 teardown-aws:
 	cd cloudformation && yes | sceptre delete demo/eks-workergroup.yaml
+	cd cloudformation && yes | sceptre delete demo/eks-network-loadbalancer.yaml
 	cd cloudformation && yes | sceptre delete demo/eks-controlplane.yaml
 	cd cloudformation && yes | sceptre delete demo/eks-iam.yaml
 
