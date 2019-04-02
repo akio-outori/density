@@ -1,19 +1,9 @@
 APP="density"
 
-minikube: setup build deploy
-aws: setup-aws setup-helm setup-metrics-server setup-cluster-autoscaler setup-prometheus setup-custom-metrics build-aws deploy
+minikube: setup setup-helm setup-metrics-server setup-prometheus setup-custom-metrics setup-haproxy build-aws deploy
+aws: setup-aws setup-helm setup-metrics-server setup-cluster-autoscaler setup-prometheus setup-custom-metrics setup-haproxy build-aws deploy
 
 build:
-	DOCKER_IP = $(shell minikube ip)
-	export DOCKER_HOST=tcp://$(DOCKER_IP):2376
-	export DOCKER_API_VERSION := 1.35
-	export DOCKER_TLS_VERIFY  := 1
-	export DOCKER_CERT_PATH   := $(HOME)/.minikube/certs
-	@echo docker ip: $(DOCKER_IP)
-	@echo docker host: $(DOCKER_HOST)
-	@echo docker api version: $(DOCKER_API_VERSION)
-	@echo docker tls verify: $(DOCKER_TLS_VERIFY)
-	@echo docker cert path: $(DOCKER_CERT_PATH)
 	cd docker/app_a/ && docker build --tag $(APP)/app_a:latest .
 	cd docker/app_b/ && docker build --tag $(APP)/app_b:latest .
 
@@ -25,13 +15,12 @@ build-aws:
 
 setup:
 	minikube start --memory 4096 --logtostderr
-	minikube addons enable metrics-server
-	minikube addons enable heapster
+	kubectl config use-context minikube
 
 setup-aws:
 	cd cloudformation && yes | sceptre launch demo/eks-iam.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-controlplane.yaml
-	cd cloudformation && yes | sceptre delete demo/eks-network-loadbalancer.yaml
+	cd cloudformation && yes | sceptre launch demo/eks-network-loadbalancer.yaml
 	cd cloudformation && yes | sceptre launch demo/eks-workergroup.yaml
 	aws eks --region us-east-1 update-kubeconfig --name density
 	kubectl apply -Rf kubernetes/aws
@@ -60,12 +49,11 @@ setup-custom-metrics:
 
 setup-cluster-autoscaler:
 	helm install -f kubernetes/cluster-autoscaler/values-custom.yaml kubernetes/cluster-autoscaler --name cluster-autoscaler --namespace kube-system
-	kubectl -n kube-system rollout status deploy/cluster-autoscaler
+	kubectl -n kube-system rollout status deploy/cluster-autoscaler-aws-cluster-autoscaler
 
 setup-haproxy:
-	helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
-	helm install -f kubernetes/haproxy-ingress.yaml incubator/haproxy-ingress --name haproxy-ingress --namespace haproxy-ingress
-	kubectl -n kube-system rollout status deploy/haproxy-ingress
+	kubectl create namespace haproxy-ingress
+	kubectl apply -Rf kubernetes/haproxy-ingress
 
 teardown:
 	minikube stop
@@ -82,6 +70,9 @@ teardown-helm:
 
 teardown-prometheus:
 	helm delete mon --purge
+	kubectl delete customresourcedefinitions prometheuses.monitoring.coreos.com -n monitoring
+	kubectl delete customresourcedefinitions prometheusrules.monitoring.coreos.com -n monitoring
+	kubectl delete customresourcedefinitions servicemonitors.monitoring.coreos.com -n monitoring
 
 teardown-metrics-server:
 	helm delete metrics-server --purge
