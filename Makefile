@@ -1,6 +1,7 @@
 APP="density"
+ECR="134451034775.dkr.ecr.us-east-1.amazonaws.com"
 
-minikube: setup setup-helm setup-metrics-server setup-prometheus setup-custom-metrics setup-haproxy build-aws deploy
+minikube: setup setup-helm setup-metrics-server setup-haproxy build-aws deploy
 aws: setup-aws setup-helm setup-metrics-server setup-cluster-autoscaler setup-prometheus setup-custom-metrics setup-haproxy build-aws deploy
 
 build:
@@ -8,10 +9,10 @@ build:
 	cd docker/app_b/ && docker build --tag $(APP)/app_b:latest .
 
 build-aws:
-	cd docker/app_a && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest .
-	cd docker/app_b && docker build --tag 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest .
-	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_a:latest
-	docker push 134451034775.dkr.ecr.us-east-1.amazonaws.com/density/app_b:latest
+	cd docker/app_a && docker build --tag $(ECR)/density/app_a:latest .
+	cd docker/app_b && docker build --tag $(ECR)/density/app_b:latest .
+	docker push $(ECR)/density/app_a:latest
+	docker push $(ECR)/density/app_b:latest
 
 setup:
 	minikube start --memory 4096 --logtostderr
@@ -84,7 +85,7 @@ teardown-cluster-autoscaler:
 	helm delete cluster-autoscaler --purge
 
 teardown-haproxy:
-	helm delete haproxy-ingress --purge
+	kubectl delete -Rf kubernetes/haproxy-ingress
 
 deploy:
 	kubectl apply -Rf kubernetes/$(APP)
